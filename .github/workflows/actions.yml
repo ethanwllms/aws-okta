@@ -101,10 +101,10 @@ jobs:
       - name: Install tools
         run: |
           make -f Makefile.tools github-release
-#          this is all for package_cloud :/
+# this is all for package_cloud :/
           sudo apt update -q
           sudo apt install -yq ruby ruby-dev build-essential
-#          fixes https://askubuntu.com/questions/872399/error-failed-to-build-gem-native-extension-when-trying-to-download-rubocop
+# fixes https://askubuntu.com/questions/872399/error-failed-to-build-gem-native-extension-when-trying-to-download-rubocop
           sudo gem install rake
           sudo make -f Makefile.tools package_cloud
           make -f Makefile.release publish-packagecloud
