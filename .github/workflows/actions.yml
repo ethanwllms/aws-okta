@@ -65,26 +65,26 @@ jobs:
 
   dist-linux:
     runs-on: ubuntu-latest
-      container:
-        image: golang:1.12
-      env:
-        working-directory: /go/src/github.com/aws-okta/aws-okta
-      steps:
-        - name: Install nfpm, rpmbuild
-          run: |
-            sudo make -f Makefile.tools nfpm-debian rpmbuild-debian
-        - name: Install libusb
-          run: |
-            sudo apt update -q
-            sudo apt install -yq libusb-dev libusb-1.0.0-dev
-        - name: Make distributables
-          run: |
-            make -f Makefile.release dist-linux
-        - name: Create persistant dist/ (LINUX)
-          uses: actions/upload-artifact@v1
-          with:
-            name: root
-            path: ./dist/*
+    container:
+      image: golang:1.12
+    env:
+      working-directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Install nfpm, rpmbuild
+        run: |
+          sudo make -f Makefile.tools nfpm-debian rpmbuild-debian
+      - name: Install libusb
+        run: |
+          sudo apt update -q
+          sudo apt install -yq libusb-dev libusb-1.0.0-dev
+      - name: Make distributables
+        run: |
+          make -f Makefile.release dist-linux
+      - name: Create persistant dist/ (LINUX)
+        uses: actions/upload-artifact@v1
+        with:
+          name: root
+          path: ./dist/*
 #        - persist_to_workspace:
 #            root: .
 #            paths: ['dist/*']
