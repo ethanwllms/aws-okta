@@ -1,0 +1,182 @@
+name: AWS-Okta
+
+on:
+  push:
+    branches-ignore:
+      - '/.*/'
+    tags:
+      - v*
+      - /.*/
+
+# PRELIMINARY JOBS
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+jobs:
+  test-build-golang-prev:
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.12
+    env:
+      working-directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Install linux dependencies - libusb
+        run: |
+          sudo apt update -q
+          sudo apt install -yq libusb-dev libusb-1.0.0-dev
+      - name: Test
+        run: |
+          go build -mod=vendor
+          ./aws-okta version
+
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.12
+    env:
+      working-directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Install modvendor
+        run: |
+          go get -u github.com/goware/modvendor
+      - name: Install linux dependencies - libusb
+        run: |
+          sudo apt update -q
+          sudo apt install -yq libusb-dev libusb-1.0.0-dev
+      - name: Test
+        run: make test
+      - name: Check modules are tidy and checked in
+        run: |
+          export GO111MODULE=on
+          go mod tidy
+          go mod vendor
+          modvendor -copy="**/*.c **/*.h" -v
+          if [ "$(git status --porcelain)" != "" ]; then
+            echo "git tree is dirty after tidying and vendoring modules"
+            echo "ensure go.mod and go.sum are tidy and vendor is checked in"
+            git status
+            exit 1
+          fi
+
+# LINUX
+# -----------------------------------------------------------------------------
+# Linux Distribution and Publish
+# -----------------------------------------------------------------------------
+
+  dist-linux:
+    runs-on: ubuntu-latest
+      container:
+        image: golang:1.12
+      env:
+        working-directory: /go/src/github.com/aws-okta/aws-okta
+      steps:
+        - name: Install nfpm, rpmbuild
+          run: |
+            sudo make -f Makefile.tools nfpm-debian rpmbuild-debian
+        - name: Install libusb
+          run: |
+            sudo apt update -q
+            sudo apt install -yq libusb-dev libusb-1.0.0-dev
+        - name: Make distributables
+          run: |
+            make -f Makefile.release dist-linux
+        - name: Create persistant dist/ (LINUX)
+          uses: actions/upload-artifact@v1
+          with:
+            name: root
+            path: ./dist/*
+#        - persist_to_workspace:
+#            root: .
+#            paths: ['dist/*']
+
+  publish-packagecloud:
+    needs: dist-linux
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.13
+    env:
+      working_directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Download persistant dist/
+        uses: actions/download-artifact@v1
+        with:
+          name: root
+#        - attach_workspace: { at: . }
+      - name: Install tools
+        run: |
+          make -f Makefile.tools github-release
+#          this is all for package_cloud :/
+          sudo apt update -q
+          sudo apt install -yq ruby ruby-dev build-essential
+#          fixes https://askubuntu.com/questions/872399/error-failed-to-build-gem-native-extension-when-trying-to-download-rubocop
+          sudo gem install rake
+          sudo make -f Makefile.tools package_cloud
+          make -f Makefile.release publish-packagecloud
+
+  publish-github-linux:
+    needs: dist-linux
+    runs-on: ubuntu-latest
+    container:
+      image: circleci/golang:1.13
+    env:
+      working_directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Download persistant dist/
+        uses: actions/download-artifact@v1
+        with:
+          name: root
+#      - attach_workspace: { at: . }
+      - name: Install tools
+        run: |
+          make -f Makefile.tools github-release
+          make -f Makefile.release publish-github-linux
+
+# WINDOWS
+# -----------------------------------------------------------------------------
+# Windows Distribution and Publish
+# -----------------------------------------------------------------------------
+
+  dist-windows:
+    runs-on: windows-latest
+      container:
+        image: golang:1.12
+      env:
+        working-directory: /go/src/github.com/aws-okta/aws-okta
+      steps:
+        - name: Install MSI building tools
+          run: |
+            sudo apt update -q
+            sudo apt install -yq wixl
+        - name: Make distributables
+          run: |
+            make -f Makefile.release dist-windows
+        - name: Create persistant dist/ (WINDOWS)
+          uses: actions/upload-artifact@v1
+          with:
+            name: root
+            path: ./dist/*
+  #        - persist_to_workspace:
+  #            root: .
+  #            paths: ['dist/*']
+
+  publish-github-windows:
+    needs: dist-windows
+    runs-on: windows-latest
+    container:
+      image: golang:1.13
+    env:
+      working_directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Download persistant dist/
+        uses: actions/download-artifact@v1
+        with:
+          name: root
+#      - attach_workspace: { at: . }
+      - name: Install tools
+        run: |
+          make -f Makefile.tools github-release
+          sudo apt update -q
+          sudo apt install -yq wixl
+      - name: Publish Windows exe and msi to github
+        run: |
+          make -f Makefile.release publish-github-windows
