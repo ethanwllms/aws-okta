@@ -15,8 +15,6 @@ on:
 jobs:
   test-build-golang-prev:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.11
     env:
       working-directory: /go/src/github.com/aws-okta/aws-okta
     steps:
@@ -33,6 +31,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    container:
+      image: golang:1.11
     env:
       working-directory: ./
     steps:
