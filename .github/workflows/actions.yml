@@ -29,35 +29,35 @@ jobs:
           go build -mod=vendor
           ./aws-okta version
 
-#  test:
-#    runs-on: ubuntu-latest
-#    container:
-#      image: golang:1.11
-##    env:
-##      working-directory: /go/src/github.com/aws-okta/aws-okta
-#    steps:
-#      - name: Install modvendor
-#        run: |
-#          go get -u github.com/goware/modvendor
-#      - name: Install linux dependencies - libusb
-#        run: |
-#          sudo apt update -q
-#          sudo apt install -yq libusb-dev libusb-1.0.0-dev
-#      - name: Test
-#        run: make test
-#      - name: Check modules are tidy and checked in
-#        run: |
-#          export GO111MODULE=on
-#          go mod tidy
-#          go mod vendor
-#          modvendor -copy="**/*.c **/*.h" -v
-#          if [ "$(git status --porcelain)" != "" ]; then
-#            echo "git tree is dirty after tidying and vendoring modules"
-#            echo "ensure go.mod and go.sum are tidy and vendor is checked in"
-#            git status
-#            exit 1
-#          fi
-#
+  test:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install modvendor
+        run: |
+          go get -u github.com/goware/modvendor
+      - name: Install linux dependencies - libusb
+        run: |
+          sudo apt update -q
+          sudo apt install -yq libusb-dev libusb-1.0.0-dev
+      - name: Test
+        run: make test
+      - name: Check modules are tidy and checked in
+        run: |
+          export GO111MODULE=on
+          go mod tidy
+          go mod vendor
+          modvendor -copy="**/*.c **/*.h" -v
+          if [ "$(git status --porcelain)" != "" ]; then
+            echo "git tree is dirty after tidying and vendoring modules"
+            echo "ensure go.mod and go.sum are tidy and vendor is checked in"
+            git status
+            exit 1
+          fi
+
 ## LINUX
 ## -----------------------------------------------------------------------------
 ## Linux Distribution and Publish
