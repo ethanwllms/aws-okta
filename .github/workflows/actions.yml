@@ -133,23 +133,23 @@ jobs:
 
   dist-windows:
     runs-on: windows-latest
-      container:
-        image: golang:1.12
-      env:
-        working-directory: /go/src/github.com/aws-okta/aws-okta
-      steps:
-        - name: Install MSI building tools
-          run: |
-            sudo apt update -q
-            sudo apt install -yq wixl
-        - name: Make distributables
-          run: |
-            make -f Makefile.release dist-windows
-        - name: Create persistant dist/ (WINDOWS)
-          uses: actions/upload-artifact@v1
-          with:
-            name: root
-            path: ./dist/*
+    container:
+      image: golang:1.12
+    env:
+      working-directory: /go/src/github.com/aws-okta/aws-okta
+    steps:
+      - name: Install MSI building tools
+        run: |
+          sudo apt update -q
+          sudo apt install -yq wixl
+      - name: Make distributables
+        run: |
+          make -f Makefile.release dist-windows
+      - name: Create persistant dist/ (WINDOWS)
+        uses: actions/upload-artifact@v1
+        with:
+          name: root
+          path: ./dist/*
 
   publish-github-windows:
     needs: dist-windows
