@@ -71,7 +71,7 @@ jobs:
 #    container:
 #      image: golang:1.11
     env:
-      working-directory: /go/src/github.com/aws-okta/aws-okta
+      working-directory: ./
     steps:
       - name: Checkou
         uses: actions/checkout@v2
