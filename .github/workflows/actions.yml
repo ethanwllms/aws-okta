@@ -37,6 +37,8 @@ jobs:
       - name: Install modvendor
         run: |
           go get -u github.com/goware/modvendor
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Install linux dependencies - libusb
         run: |
           sudo apt update -q
