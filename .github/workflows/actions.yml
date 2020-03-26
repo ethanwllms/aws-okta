@@ -108,6 +108,7 @@ jobs:
           sudo gem install rake
           sudo make -f Makefile.tools package_cloud
           make -f Makefile.release publish-packagecloud
+          exit 0
 
   publish-github-linux:
     needs: dist-linux
