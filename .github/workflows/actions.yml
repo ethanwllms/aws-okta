@@ -91,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: root
-          path: ./dist/*
+          path: dist/*
 
   publish-packagecloud:
     needs: dist-linux
