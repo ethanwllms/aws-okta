@@ -91,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: root
-          path: dist/*
+          path: .
 
   publish-packagecloud:
     needs: dist-linux
@@ -125,7 +125,7 @@ jobs:
     env:
       working_directory: /go/src/github.com/aws-okta/aws-okta
     steps:
-      - name: Checkou
+      - name: Checkout
         uses: actions/checkout@v2
       - name: Download persistant dist/
         uses: actions/download-artifact@v1
