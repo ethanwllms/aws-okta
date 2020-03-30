@@ -152,8 +152,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Install MSI building tools
         run: |
-          sudo apt update -q
-          sudo apt install -yq wixl
+          apt update -q
+          apt install -yq wixl
       - name: Make distributables
         run: |
           make -f Makefile.release dist-windows
@@ -161,7 +161,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: root
-          path: ./dist/*
+          path: .
 
   publish-github-windows:
     needs: dist-windows
